@@ -1,0 +1,57 @@
+package com.example.zainalsalamun.ui.fragment
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.GridLayoutManager
+import com.example.zainalsalamun.R
+import com.example.zainalsalamun.adapter.MealFilterAdapter
+import com.example.zainalsalamun.viewmodel.SlideshowViewModel
+import com.example.zainalsalamun.viewmodel.MealViewModel
+import kotlinx.android.synthetic.main.fragment_meal.*
+
+class SlideshowFragment : Fragment() {
+
+    private lateinit var slideshowViewModel: SlideshowViewModel
+    private lateinit var mealFilterAdapter: MealFilterAdapter
+
+    override fun onCreateView(
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
+    ): View? {
+        slideshowViewModel =
+                ViewModelProviders.of(this).get(SlideshowViewModel::class.java)
+        val root = inflater.inflate(R.layout.fragment_meal, container, false)
+        return root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        mealRecyclerView.layoutManager = GridLayoutManager(context,2, GridLayoutManager.VERTICAL,false)
+        mealFilterAdapter = MealFilterAdapter()
+        mealRecyclerView.adapter = mealFilterAdapter
+        observeViewModel()
+    }
+
+    fun observeViewModel() {
+        var mealViewModel: MealViewModel = ViewModelProvider(this).get(MealViewModel::class.java)
+        mealViewModel.loadMeal("SeaFood")
+        mealViewModel.getMealByCategory().observe(viewLifecycleOwner, Observer {
+            mealRecyclerView.visibility = View.VISIBLE
+            txtLoadError.visibility = View.GONE
+            mealFilterAdapter.updateMeal(it)
+        })
+
+        mealViewModel.getLoadingError().observe(viewLifecycleOwner, Observer {
+            txtLoadError.visibility = View.VISIBLE
+            mealRecyclerView.visibility = View.GONE
+        })
+    }
+}
